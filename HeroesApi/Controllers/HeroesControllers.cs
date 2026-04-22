@@ -10,8 +10,22 @@ namespace HeroesApi.Controllers;
 [Route("api/[controller]")]
 public class HeroesController : ControllerBase {
     [HttpGet]
-    public ActionResult<List<Hero>> GetAll() {
-        return Ok(HeroesStore.Heroes);
+    public ActionResult<List<Hero>> GetAll([FromQuery] string? universe = null) {
+        if (universe is null) {
+            return Ok(HeroesStore.Heroes);
+        }
+        else {
+            return Ok(HeroesStore.Heroes.Where(h => h.Universe.ToString() == universe));
+        }
+    }
+
+    [HttpGet("search")]
+    public ActionResult<Hero> GetHero([FromQuery] string name) {
+        if (string.IsNullOrWhiteSpace(name))
+            return BadRequest(new { Message = "Параметр name не может быть пустым" });
+        var results = HeroesStore.Heroes
+            .Where(h => h.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+        return Ok(results);
     }
 
     [HttpGet("{id}")]
